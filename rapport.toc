@@ -1,0 +1,10 @@
+\babel@toc {english}{}
+\contentsline {section}{\numberline {1}Introducion}{3}%
+\contentsline {section}{\numberline {2}Architecture Matérielle}{4}%
+\contentsline {subsection}{\numberline {2.1}Matériel}{4}%
+\contentsline {subsection}{\numberline {2.2}Mise en place de l'architecture}{4}%
+\contentsline {subsubsection}{\numberline {2.2.1}Interface utilisateur}{5}%
+\contentsline {subsubsection}{\numberline {2.2.2}Appareils de mesure}{5}%
+\contentsline {subsubsection}{\numberline {2.2.3}Sorties utilisateur}{5}%
+\contentsline {section}{\numberline {3}Architecture Code}{6}%
+\contentsline {subsection}{\numberline {3.1}Initialisation}{6}%
