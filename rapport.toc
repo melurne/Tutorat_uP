@@ -16,4 +16,4 @@
 \contentsline {subsection}{\numberline {4.2}Approximation numérique}{16}{}%
 \contentsline {section}{\numberline {5}Annexe}{17}{}%
 \contentsline {subsection}{\numberline {5.1}Code Global}{17}{}%
-\contentsline {subsection}{\numberline {5.2}Recherche de la limite}{24}{}%
+\contentsline {subsection}{\numberline {5.2}Recherche de la limite}{17}{}%
