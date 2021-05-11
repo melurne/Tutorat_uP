@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Arch Linux) (preloaded format=pdflatex 2021.5.6)  11 MAY 2021 22:16
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Arch Linux) (preloaded format=pdflatex 2021.5.6)  11 MAY 2021 22:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -295,74 +295,79 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
  [6] [7]
-Overfull \hbox (0.91286pt too wide) in paragraph at lines 195--196
+Overfull \hbox (1.5591pt too wide) in paragraph at lines 195--196
 []\OT1/cmr/m/n/12 (-20) : Utilis^^Ses lors de l'utilisation de l'ADC donc pas u
-tiles pour l'initialisation. 
+tiles pour l'initialisation,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 199--200
+
  []
 
 [8]
-Overfull \hbox (13.2234pt too wide) in paragraph at lines 253--260
+Overfull \hbox (13.2234pt too wide) in paragraph at lines 261--268
  [] 
  []
 
 [9]
-Overfull \hbox (8.21288pt too wide) in paragraph at lines 290--292
+Overfull \hbox (8.21288pt too wide) in paragraph at lines 298--300
 \OT1/cmr/m/n/12 (-20) d'interruption qui am^^Rene ^^Ra l'appel de la proc^^Sedu
 re d'interruption $\OML/cmm/m/it/12 IRQ[]detecteur$\OT1/cmr/m/n/12 (-20) . 
  []
 
 [10]
-Underfull \hbox (badness 10000) in paragraph at lines 308--309
+Underfull \hbox (badness 10000) in paragraph at lines 316--317
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 310--311
+Underfull \hbox (badness 10000) in paragraph at lines 318--319
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 319--320
+Underfull \hbox (badness 10000) in paragraph at lines 327--328
 
  []
 
 [11] [12] [13]
-Overfull \hbox (44.60046pt too wide) in paragraph at lines 398--400
+Overfull \hbox (44.60046pt too wide) in paragraph at lines 406--408
 [][][][]  
  []
 
 [14] [15] [16] [17]
-Overfull \hbox (176.82028pt too wide) in paragraph at lines 534--535
+Overfull \hbox (176.82028pt too wide) in paragraph at lines 542--543
 [][][][]  
  []
 
 [18]
-Overfull \hbox (15.44919pt too wide) in paragraph at lines 558--559
+Overfull \hbox (15.44919pt too wide) in paragraph at lines 566--567
 [][][][][][][][][][][][][][][][][][][][][][][][][]  
  []
 
 
-Overfull \hbox (176.82028pt too wide) in paragraph at lines 561--562
+Overfull \hbox (176.82028pt too wide) in paragraph at lines 569--570
 [][][][]  
  []
 
 
-Overfull \hbox (222.80978pt too wide) in paragraph at lines 590--593
+Overfull \hbox (222.80978pt too wide) in paragraph at lines 598--601
 [][][][]  
  []
 
 [19]
-Overfull \hbox (148.07684pt too wide) in paragraph at lines 608--610
+Overfull \hbox (148.07684pt too wide) in paragraph at lines 616--618
 [][][][]  
  []
 
 
-Overfull \hbox (148.07684pt too wide) in paragraph at lines 623--625
+Overfull \hbox (148.07684pt too wide) in paragraph at lines 631--633
 [][][][][][]  
  []
 
 [20] [21] [22]
-Overfull \hbox (248.55847pt too wide) in paragraph at lines 710--712
+Overfull \hbox (248.55847pt too wide) in paragraph at lines 718--720
 [][]  
  []
 
@@ -383,7 +388,7 @@ ype1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/ams
 fonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10
 .pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/sha
 re/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
-Output written on rapport.pdf (24 pages, 221008 bytes).
+Output written on rapport.pdf (24 pages, 221506 bytes).
 PDF statistics:
  115 PDF objects out of 1000 (max. 8388607)
  79 compressed objects within 1 object stream

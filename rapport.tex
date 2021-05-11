@@ -192,10 +192,18 @@
 		\end{center}
 		\begin{itemize}
 			\item[ADEN] : On active l'ADC.
-			\item[ADCS; ADATE; ADIF] : Utilisés lors de l'utilisation de l'ADC donc pas utiles pour l'initialisation.
+			\item[ADCS; ADATE; ADIF] : Utilisés lors de l'utilisation de l'ADC donc pas utiles pour l'initialisation, on laissera ici tout à 0 pour avoir l'ADC à la demande.
 			\item[ADIE] : Interrupt Enable.
 			\item[ADPS[2:0]] : Prescaler, on veut que l'ADC fonctionne entre $50\ kHz$ et $200\ kHz$, la clock de l'ATMEGA etant à $16\ Mhz$, une division par 128 nous donne une fréquence acceptable (soit ADPS[2:0] = 000)
 		\end{itemize}
+		ADCSRB: Pas de bits utiles pour nous.\\
+		
+		Nous utiliserons des interruptions pour le clavier et pour le détecteur.
+		\begin{lstlisting}
+			EIMSK@IO <- 0b00000011
+			EICRA <- 0b00001101 
+		\end{lstlisting}
+		On active ici les interuptions sur INT1 et INT0, le clavier sur INT0 en mode front montant et le détecteur sur INT1 en mode front montant et descendant.
 		
 		Nous utiliserons un WatchDog pour temporiser nos mesures, celui çi est ici reglé pour envoyer des interuptions toute les 0.5s (Ce choix est discuté dans la partie limites).
 		\begin{lstlisting}
@@ -209,7 +217,7 @@
 				\hline
 				WDIF & WDIE & WDP3 & WDCE & WDE & WDP2 & WDP1 & WDP0\\
 				\hline
-				1 & 0 & 0 & 0 & 1 & 1 & 0 & 1\\
+				0 & 1 & 0 & 0 & 0 & 1 & 0 & 1\\
 				\hline
 			\end{tabular}
 		\end{center}
