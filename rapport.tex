@@ -327,19 +327,19 @@
 		Ici tout ce que fait la procédure c'est lancer une convertion sur ADC0 afin de mesurer la distance du radar au vehicule, lorsque cette mesure sera faite, le convertisseur analogique numérique lancera une interruption qui déclanchera la procédure $IRQ\_convertion$.\\
 
 		\begin{lstlisting}
-			IRQ_CONVERTION:     ;quand la distance a ete convertie en valeur numerique
+			IRQ_CONVERTION: 	;quand la distance a ete convertie en valeur numerique
 			mesure <- ADCH
 			si CptMesure == 0 alors saut cpt0 ;la premiere mesure de vitesse 
 			si CptMesure == 1 alors saut cpt1 ;2 eme mesure de vitesse
 			
 			cpt0:
-			Pos1<-mesure         ;alors on stocke la valeur mesure par la conversion entre 0 et 255
+			Pos1<-mesure 		;alors on stocke la valeur mesure par la conversion entre 0 et 255
 			CptMesure <- 1 
 			RETI
 			
 			cpt1:
 			pos2<-mesure
-			if(Pos1-Pos2)>VitesseLimite saut distflash     ;si la vitesse et superieur a la limite et que la voiture est a plus de 30m du tel
+			si(Pos1-Pos2)>VitesseLimite saut distflash 	;si la vitesse et superieur a la limite et que la voiture est a plus de 30m du tel
 			CptMesure <- 0
 			RETI
 		\end{lstlisting}
@@ -347,55 +347,61 @@
 		Si ce n'est pas le cas la procédure s'arrête ici.\\
 		
 		\begin{lstlisting}
-			distflash:                  ;si la vitesse est superieur on attends que la distance au radar soit inferieur a 30m
+			distflash:  				;si la vitesse est superieur on attends que la distance au radar soit inferieur a 30m
 			
 			posflash<-pos2 
-			ADCSRA<-0b11101111         ;on active la mesure en continue
+			ADCSRA<-0b11101111 		;on active la mesure en continue
 			
 			condition:
-			si posflash<76 alors saut port_serie      ;76 en analogique soit 255/100*30 pour avoir les 30m
+			si posflash<76 alors saut port_serie  	;76 en analogique soit 255/100*30 pour avoir les 30m
 			
 			Adcloop:
-			si ADCSRA & 0x10 != 0x10 saut Adcloop     ; si la conversion est fini 
+			si ADCSRA & 0x10 != 0x10 saut Adcloop 	; si la conversion est fini 
 			posflash<-ADCH
 			jmp condition 
 			
 			;liaison serie -----------------------------------------------
 			
 			portSerie:
-			USCR0A <- 0x00            ;desactive la mesure en continue 
-			PORTA<-0x80                 ;flash
+			ADCSRA <- 0x00			;desactive la mesure en continue 
+			PORTA@IO<-0x80 				;flash
 			CptEmission <- 0
 			mesure<- Pos2-Pos1
 			
 			imprime:
-			si ( UCSR0A&0x20 != 0x20) alors saut imprime     ;si le buffer et pres a envoyer
+			si ( UCSR0A&0x20 != 0x20) alors saut imprime 	;si le buffer et pres a envoyer
 			
 			envoie:
 			si CptEmission== 0 alors saut unit
 			si CptEmission== 1 alors saut diz  
 			si CptEmission==2 alors saut cent
+			si CptEmission==3 alors saut entree
 			
 			unit:
-			unite<- (mesure%100)*3.6        ;le compilateur ne prend pas en compte les virgules flottantes
-			UDR0<- unite%10
-			retenu<- mesure/10             ;retenu car peut etre sup a 9
+			unite<- (mesure%100)*3.6		;le compilateur ne prend pas en compte les virgules flottantes
+			UDR0<- unite%10 +48
+			retenu<- mesure/10 			;retenu car peut etre sup a 9
 			CptMesure<-1
 			jmp imprime
 			
 			dizaine:
 			
 			unite<- ((mesure/10)%10)*3.6 + retenu
-			UDR0<- unite%10
+			UDR0<- unite%10 + 48
 			retenu<- mesure/10
 			CptMesure<-2
 			jmp imprime
 			
 			cent:
 			unite <- (mesure/100)*3.6 + retenu
-			UDR0 <- unite%10
+			UDR0 <- unite%10 + 48
 			retenu <- mesure/10
-			CptMesure<-0
+			CptMesure<-3
+			jmp imprime
+			
+			entree:
+			UDRO<-27
+			CptMesure<-3
 			RETI
 		\end{lstlisting}
 		Cette procédure a pour but global de prendre une première mesure de vitesse au début de la zone de mesure, et si cette mesure de vitesse est supérieure à la vitesse maximale autorisée, alors le convertisseur analogique numérique est lancé en free running mode et le radar flashera le vehicule lorsque la mesure de position sera inférieure à 30m on lance la procédure de flash et d'envoi de la vitesse mesurée à l'imprimante. Ce choix est expliqué plus en détail dans la partie 4.1.\\
@@ -405,9 +411,6 @@
 		\subsection{Changement de la vitesse limite par l'utilisateur}
 		La vitesse limite authorisée doit pouvoir être modifiée à tout moment par l'utilisateur à l'aide du clavier, nous afficherons également la saisie sur les 3 afficheurs durant la durée de la saisie et nous désactiverons les afficheurs lorsque la saisie a été validée car ils ne seront pas utiles lors d'une utilisation normale. Cette saisie sera stockée dans 3 variables (une pour chaque digit) ce qui facilitera la saisie et nottament la correction.
 		\begin{lstlisting}
-			;on considere un clavier comme en TP  avec *=C #=C
-			;clavier
-			
 			IRQ_Clavier: ;si contact entre les pin
 			
 			init_clavier:
@@ -418,7 +421,7 @@
 			PORTA@IO<-codeClavier@ROM[i]
 			touche <- PINA@IO
 			si (touche == 0x44 ) alors saut REINITclavier ;C
-			si (touche == 0x42 ) alors saut VALIDEclavier ;V
+			si (touche == 0x41 ) alors saut VALIDEclavier ;V
 			si (touche == PORTA@IO)&&(CptAff!=3) alors saut sauvTouche
 			;sinon on incremente i
 			i <- i + 1 
@@ -432,6 +435,7 @@
 			si CptAff==1 alors NBd<-NBtouche
 			si CptAff==2 alors NBc<-NBtouche
 			CptAff<-CptAff+1
+			PORTA@IO <- 0b01111000
 			RETI
 			
 			VALIDEclavier:
@@ -449,9 +453,12 @@
 			NBc<-0
 			BuffVitesseLimite<-0
 			changeVitesse<-0
+			PORTA@IO <- 0b01111000
+			PORTB@IO <- 0x00
+			PORTC@IO <- 0x00
 			RETI
 		\end{lstlisting}
-		On utilise ici également un buffer pour stocker la vitesse à entrer sur 2 Obtets affin d'eviter des problèmes d'overflow lorsque l'utilisateur tape sur le clavier (en effet rien ne l'empêche de taper 999). Par la suite, nous mettons en place une valeur maximale de cette vitesse limite du côté du code etant donné que la mesure sera faite en m/s, il n'est pas possible de rentrer une vitesse limite plus grande que $918\ km/h$
+		On utilise ici également un buffer pour stocker la vitesse à entrer sur 2 Obtets affin d'eviter des problèmes d'overflow lorsque l'utilisateur tape sur le clavier (en effet rien ne l'empêche de taper 999). Par la suite, nous mettons en place une valeur maximale de cette vitesse limite du côté du code etant donné que la mesure sera faite en m/s, il n'est pas possible de rentrer une vitesse limite plus grande que $918\ km/h$, en effet cette vitesse représente $255\ m/s$ qui remplis un octet.
 		
 		\section{Limites}
 		\subsection{Limite de l'utilisation du WatchDog à 0.5s}
@@ -471,14 +478,312 @@
 		Comme on peut le constater, ces plages sont problématiques car parfaitement atteignable par un vehicule sur une autoroute (particulièrement les 2 premières). Notre solution pour palier à ce problème est celle implémentée en 3.2, l'attente en free running mode que le vehicule puisse être flashé fait que la seule façon d'éviter le radar serait de traverser la zone des 30m en moins de temps qu'il n'en faut à l'ATMEGA pour réaliser une convertion, ce qui fait que la vitesse minimale pour y parvenir devient bien trop élevée pour qu'un vehicule terrestre puisse l'atteindre.
 	
 		\subsection{Approximation numérique}
-		Par soucis de précision, on stocke la vitesse maximale tout comme les mesures effectuées en m/s, avec les distances en metres ramenés de $[0;100]$ sur $[0;255]$ pour avoir toute la précision disponible sur 8 bits, cela nous donne une précision de $\dfrac{100}{255} = 0.39m$ soit une précision sur la vitesse de $\dfrac{0.39m}{0.5s} = 0.78m/s = 2.8 km/h$ ce qui est admissible. De plus cette approche nous permet d'avoir une vitesse maximale mesurable de $360km/h$ contre les 255 que peuvent acceuillir un octet.
+		Par soucis de précision, on stocke la vitesse maximale tout comme les mesures effectuées en m/s, avec les distances en metres ramenés de $[0;100]$ sur $[0;255]$ pour avoir toute la précision disponible sur 8 bits, cela nous donne une précision de $\dfrac{100}{255} = 0.39m$ soit une précision sur la vitesse de $\dfrac{0.39m}{0.5s} = 0.78m/s = 2.8 km/h$ ce qui est admissible. De plus cette approche nous permet d'avoir une vitesse maximale mesurable de $360km/h$ contre les 255 que peuvent acceuillir un octet, ce qui est acceptable étant donné la difficulté d'un vehicule terrestre à atteindre une telle vitesse.\\
+		Cette limite n'est engendrée que par la valeur du WatchDog, ce qui implique qu'elle peut être négligée par un simple changement de code (pour mesurer des vitesses sur un circuit de course par exemple).
  		Par ailleur les multiplications et divisions par des nombres flottants amènent des imprécisions duent aux arrondis.
 		
 		\newpage
 		\section{Annexe}
 		\subsection{Code Global}
 		\begin{lstlisting}
+			;interuption
+			.equ EIMSK           = 0x3D
+			.equ EICRA           = 0x69
 			
+			;watch_dog
+			.equ WDTCSR        = 0x60
+			
+			;convertion analogique 
+			.equ ADMUX 	= 0x7C
+			.equ ADCSRB = 0x7B
+			.equ ADCSRA = 0X7A
+			.equ ADCL 	= 0x78
+			.equ ADCH 	= 0x79
+			
+			;clavier A
+			.equ DDRA	= 0x01
+			.equ PORTA	= 0x02
+			.equ PINA	= 0x00
+			
+			;communication serie 
+			.equ UCSR0A	= 0x00C0
+			.equ UCSR0B         = 0x00C1
+			.equ UCSR0C         = 0x00C2
+			.equ UBRR0L        = 0x00C4
+			.equ UBRR0H        = 0x00C5
+			.equ UDR0            = 0x00C6
+			
+			.equ DDRB	= 0x04
+			.equ PORTB	= 0x05
+			.equ PINB	= 0x03
+			.equ DDRC	= 0x07
+			.equ PORTC	= 0x08
+			.equ PINC	= 0x06
+			
+			.dseg
+			
+			.org 0x0200
+			
+			CptDetection: .BYTE 1
+			CptMesure: .BYTE 1
+			CptEmission: .BYTE 1
+			Pos1: .BYTE 1
+			Pos2: .BYTE 1
+			PosMesure: .BYTE 1
+			Posflash: .BYTE 1
+			VitesseLimite: .BYTE 1
+			unite: .BYTE 1
+			retenu: .BYTE 1
+			
+			
+			;clavier
+			
+			touche: .BYTE 1
+			CptAff: .BYTE 1
+			i: .BYTE 1
+			NBu: .BYTE 1
+			NBd: .BYTE 1
+			NBc: .BYTE 1
+			NBtouche: .BYTE 1
+			BuffVitesseLimite: .BYTE 2
+			changeVitesse: .BYTE 1
+			
+			
+			;------------------------------------------------------------------------------------------
+			.cseg
+			
+			;initalisation des interuption INT
+			.org 0x0002
+			jmp IRQ_Detecteur ;interruption du detecteur
+			
+			.org 0x0004
+			jmp IRQ_Clavier ;interuption clavier
+			
+			.org 0x0018
+			jmp IRQ_WDT ;interruption watch_dog
+			
+			.org 0x003A
+			jmp IRQ_CONVERTION ;interuption conversion dispo
+			
+			.org 0x0080
+			
+			;Code pour afficher
+			codeAff:
+			.DB 0x7E,0x0C,0x37,0x1F,0x4D,0x5B,0x7B,0x0E,0x7F,0x5F
+			
+			;Code de test du clavier
+			codeClavier:
+			.DB 0x42,0x0C,0x0A,0x09,0x14,0x12,0x11,0x24,0x22,0x21,0x44,0x41
+			;0x44 -> C et 0x41 -> V
+			
+			;------------------------------------------------------------------------------------------
+			;debut programme
+			init:
+			CptMesure <- 0
+			EIMSK@IO <- 0b00000011 	        ;activation de INT0 et INT1
+			EICRA <- 0b00001101 	                     ;on met le detecteur en activation front montant et descendant 
+			;et INT 1 en montant    
+			ADMUX <- 0b01100000 	;selection ADC0
+			ADCSRB <- 0x00 		       ;tjr a 0
+			;le premier 01 REFS1:2 choisi car valeur entre 0V et 5V 
+			;ADLAR a 1 car on prends les 8 peremiers bit 
+			
+			DDRA@IO <- 0x78 			      ;tout en sortie sauf 0,1,2
+			DDRB@IO <- 0xFF	 
+			DDRC@IO <- 0x07
+			PORTA@IO <- 0b01111000 	      ;allumage des broche du clavier en attente de contact
+			;IRQ_Detecteur
+			CptDetection <- 0
+			
+			;clavier
+			CptAff <- 0
+			NBu <-0
+			NBd <-0
+			NBc <-0
+			
+			;init imprime
+			UBBR0L <- 0b01000000 ;16Mhz BaudRate : 1200
+			UBBR0H <- 0b00000011 ;16Mhz BaudRate : 1200
+			USCR0A <- 0x00
+			USCR0B <- 0b00001000 
+			USCR0C <- 0b00000110  ; pas de parite  8bit
+			SEI 
+			;--------------------------------------------------------------------------------------------------
+			
+			
+			Loop: 	;boucle principal afficheur 7seg multiplexe
+			si changeVitesse!=0 alors saut afficheVitesseChange
+			jmp loop;
+			
+			afficheVitesseChange:
+			PORTC@IO<-0x04
+			PORTB@IO<-codeAff@ROM[NBu]
+			PORTC@IO<-0x02
+			PORTB@IO<-codeAff@ROM[NBd]
+			PORTC@IO<-0x01
+			PORTB@IO<-codeAff@ROM[NBc]
+			PORTC@IO<-0x00
+			jmp loop;
+			
+			
+			;-------------------------------------------------------------------------------------
+			
+			IRQ_Detecteur:                                                     ;detection d une voiture par le detecteur de presence  
+			si CptDetection==0 alors saut initWatch             ;si le capteur est en front montant on initialise le watch__dog
+			;si non on reinitialise le watch dog 
+			WDTCSR <- 0b00010000                              ;debloquage du watchdog
+			WDTCSR <- 0b00000000                              ;reinitialisation
+			CptDetection <- 0 
+			RETI
+			
+			initWatch: 
+			WDTCSR<-0b00010000
+			WDTCSR<-0b01000101
+			CptDetection <- 1
+			RETI
+			;-------------------------------------------------------------------------------------
+			
+			;interuption du watch_dog
+			;quand le watch_dog est activer on active la prise de mesure
+			IRQ_WDT:
+			si changeVitesse!=0 alors RETI ; si l utilisateur tape sur le clavier on stop les mesure des vehicules le RETI ici empeche toute la suite du programme  
+			ADCSRA<-0b11001111
+			;ADEN 1 turn on adc
+			;ADSC 1 premiere demande de conversion
+			;ADATE 0 = une comversion
+			;ADIF 0 car flag de fin 
+			;ADIE 1 autorise les interuption 
+			;APS2 1 1 facteur de division 128 nous devons realiser une mesure entre
+			;50khz et 200khz etant a 8MHz si on divise par 128 ->62.5khz soit compris
+			;entre 50 et 200
+			RETI
+			
+			IRQ_CONVERTION: 	;quand la distance a ete convertie en valeur numerique
+			mesure <- ADCH
+			si CptMesure == 0 alors saut cpt0 ;la premiere mesure de vitesse 
+			si CptMesure == 1 alors saut cpt1 ;2 eme mesure de vitesse
+			
+			cpt0:
+			Pos1<-mesure 		;alors on stocke la valeur mesure par la conversion entre 0 et 255
+			CptMesure <- 1 
+			RETI
+			
+			cpt1:
+			pos2<-mesure
+			si(Pos1-Pos2)>VitesseLimite saut distflash 	;si la vitesse et superieur a la limite et que la voiture est a plus de 30m du tel
+			CptMesure <- 0
+			RETI
+			
+			;flash ------------------------------------------
+			
+			distflash:  				;si la vitesse est superieur on attends que la distance au radar soit inferieur a 30m
+			
+			posflash<-pos2 
+			ADCSRA<-0b11101111 		;on active la mesure en continue
+			
+			condition:
+			si posflash<76 alors saut port_serie  	;76 en analogique soit 255/100*30 pour avoir les 30m
+			
+			Adcloop:
+			si ADCSRA & 0x10 != 0x10 saut Adcloop 	; si la conversion est fini 
+			posflash<-ADCH
+			jmp condition 
+			
+			;liaison serie -----------------------------------------------
+			
+			portSerie:
+			ADCSRA <- 0x00			;desactive la mesure en continue 
+			PORTA@IO<-0x80 				;flash
+			CptEmission <- 0
+			mesure<- Pos2-Pos1
+			
+			imprime:
+			si ( UCSR0A&0x20 != 0x20) alors saut imprime 	;si le buffer et pres a envoyer
+			
+			envoie:
+			si CptEmission== 0 alors saut unit
+			si CptEmission== 1 alors saut diz  
+			si CptEmission==2 alors saut cent
+			si CptEmission==3 alors saut entree
+			
+			unit:
+			unite<- (mesure%100)*3.6		;le compilateur ne prend pas en compte les virgules flottantes
+			UDR0<- unite%10 +48
+			retenu<- mesure/10 			;retenu car peut etre sup a 9
+			CptMesure<-1
+			jmp imprime
+			
+			dizaine:
+			
+			unite<- ((mesure/10)%10)*3.6 + retenu
+			UDR0<- unite%10 + 48
+			retenu<- mesure/10
+			CptMesure<-2
+			jmp imprime
+			
+			cent:
+			unite <- (mesure/100)*3.6 + retenu
+			UDR0 <- unite%10 + 48
+			retenu <- mesure/10
+			CptMesure<-3
+			jmp imprime
+			
+			entree:
+			UDRO<-27
+			CptMesure<-3
+			RETI
+			
+			;clavier ----------------------------------------------------------------------------------------------------
+			
+			;on considere un clavier comme en TP  avec *=C #=C
+			;clavier
+			
+			IRQ_Clavier: ;si contact entre les pin
+			
+			init_clavier:
+			i<-0
+			changeVitesse<-1
+			
+			parcours_clavier: ;on parcours le clavier jusqu a trouver le bon 
+			PORTA@IO<-codeClavier@ROM[i]
+			touche <- PINA@IO
+			si (touche == 0x44 ) alors saut REINITclavier ;C
+			si (touche == 0x41 ) alors saut VALIDEclavier ;V
+			si (touche == PORTA@IO)&&(CptAff!=3) alors saut sauvTouche
+			;sinon on incremente i
+			i <- i + 1 
+			JMP parcours_clavier
+			
+			;partie pour l afficheur 
+			
+			sauvTouche: ;sauvegarde de la touche 
+			NBtouche<- i
+			si CptAff==0 alors NBu<-NBtouche
+			si CptAff==1 alors NBd<-NBtouche
+			si CptAff==2 alors NBc<-NBtouche
+			CptAff<-CptAff+1
+			PORTA@IO <- 0b01111000
+			RETI
+			
+			VALIDEclavier:
+			BuffVitesseLimite<-NBu
+			BuffVitesseLimite<-BuffVitesseLimite+(NBd*10)
+			BuffVitesseLimite<-BuffVitesseLimite+(NBc*100)
+			si BuffVitesseLimite>918 alors BuffVitesseLimite<-918
+			VitesseLimite<-BuffVitesseLimite/3.6
+			
+			REINITclavier:
+			CptAff<-0
+			NBtouche<-0 
+			NBu<-0
+			NBd<-0
+			NBc<-0
+			BuffVitesseLimite<-0
+			changeVitesse<-0
+			PORTA@IO <- 0b01111000
+			PORTB@IO <- 0x00
+			PORTC@IO <- 0x00
+			RETI
 		\end{lstlisting}
 	\subsection{Recherche de la limite}
 	\begin{lstlisting}

@@ -11,9 +11,9 @@
 \contentsline {subsection}{\numberline {3.2}Initialisation}{7}{}%
 \contentsline {subsection}{\numberline {3.3}Structure globale}{10}{}%
 \contentsline {subsection}{\numberline {3.4}Changement de la vitesse limite par l'utilisateur}{14}{}%
-\contentsline {section}{\numberline {4}Limites}{15}{}%
-\contentsline {subsection}{\numberline {4.1}Limite de l'utilisation du WatchDog à 0.5s}{15}{}%
+\contentsline {section}{\numberline {4}Limites}{16}{}%
+\contentsline {subsection}{\numberline {4.1}Limite de l'utilisation du WatchDog à 0.5s}{16}{}%
 \contentsline {subsection}{\numberline {4.2}Approximation numérique}{16}{}%
-\contentsline {section}{\numberline {5}Annexe}{17}{}%
-\contentsline {subsection}{\numberline {5.1}Code Global}{17}{}%
-\contentsline {subsection}{\numberline {5.2}Recherche de la limite}{17}{}%
+\contentsline {section}{\numberline {5}Annexe}{18}{}%
+\contentsline {subsection}{\numberline {5.1}Code Global}{18}{}%
+\contentsline {subsection}{\numberline {5.2}Recherche de la limite}{25}{}%
