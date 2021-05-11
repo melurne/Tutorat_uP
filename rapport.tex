@@ -47,11 +47,12 @@
 		\begin{enumerate}
 			\item Mesurer la vitesse d'un véhicule qui entre dans sa zone d'action
 			\item Permettre de changer la vitesse maximale authorisée à l'aide d'un clavier
+			\item Nous avons aussi ajouté des afficheurs 7 segments pour afficher la vitesse alors qu'elle est tapée.
 			\item Si la vitesse mesurée est supérieure à la vitesse maximale, activer le flash et envoyer la vitesse mesurée sur l'imprimante série
 		\end{enumerate}
 	
-		On nous demande ici en plus, de ne flasher que lorsque le vehicule se trouve à une distance de moins de 30m du radar afin que l'appareil photo puisse avoir une bonne vue de la plaque d'immatriculation.\\
-		Malheureusement cette restriction nous amène à des limitations dans notre capacité à mesurer certaines vitesses mais ce point sera développé plus emplement plus loin.
+		On nous demande ici en plus, de ne flasher que lorsque le vehicule se trouve à une distance de moins de 30m du radar afin que l'appareil photo puisse avoir une bonne vue de la plaque d'immatriculation. Cette restriction nous as posé quelque problème que nous detailliron plus tard dans la partie sur les limites du système.
+		
 		
 	\newpage
 	\section{Architecture Matérielle}
@@ -93,12 +94,60 @@
 			ADCSRB = 0x00
 		\end{lstlisting}
 		
+		ADMUX:
+		\begin{center}
+		\begin{tabular}{|c|c|c|c|c|c|c|c|}
+		\hline
+		REFS1 & REFS0 & ADLAR & MUX4 & MUX3 & MUX2 & MUX1 & MUX0\\
+		\hline
+		0 & 0 & 1 & 0 & 0 & 0 & 0 & 0\\
+		\hline
+		\end{tabular}
+		\end{center}
+		\begin{itemize}
+			\item[REFS[1:0]] : On prends la réference sur 5V.
+			\item[ADLAR] : On choisis de ne lire que les bits de poids fort, on choisis donc d'aligner à gauche.
+			\item[MUX[4:0]] : On fait la convertion sur ADC0, soit l'adresse MUX = 0 0000.
+		\end{itemize}
+		
+		ADCSRA:
+		\begin{center}
+			\begin{tabular}{|c|c|c|c|c|c|c|c|}
+				\hline
+				ADEN & ADSC & ADATE & ADIF & ADIE & ADPS2 & ADPS1 & ADPS0\\
+				\hline
+				1 & 0 & 0 & 0 & 1 & 1 & 1 & 1\\
+				\hline
+			\end{tabular}
+		\end{center}
+		\begin{itemize}
+			\item[ADEN] : On active l'ADC.
+			\item[ADCS; ADATE; ADIF] : Utilisés lors de l'utilisation de l'ADC donc pas utiles pour l'initialisation.
+			\item[ADIE] : Interrupt Enable.
+			\item[ADPS[2:0]] : Prescaler, on veut que l'ADC fonctionne entre $50\ kHz$ et $200\ kHz$, la clock de l'ATMEGA etant à $16\ Mhz$, une division par 128 nous donne une fréquence acceptable (soit ADPS[2:0] = 000)
+		\end{itemize}
+		
 		Nous utiliserons un WatchDog pour temporiser nos mesures, celui çi est ici reglé pour envoyer des interuptions toute les 0.5s (Ce choix est discuté dans la partie limites).
 		\begin{lstlisting}
 			//Watchdog (interruptions toute les 0.5s)
 			WDTCSR = 0x10 // enable change
 			WDTCSR = 0b0101 0101
 		\end{lstlisting}
+		WDTCSR:
+		\begin{center}
+			\begin{tabular}{|c|c|c|c|c|c|c|c|}
+				\hline
+				WDIF & WDIE & WDP3 & WDCE & WDE & WDP2 & WDP1 & WDP0\\
+				\hline
+				1 & 0 & 0 & 0 & 1 & 1 & 1 & 1\\
+				\hline
+			\end{tabular}
+		\end{center}
+		\begin{itemize}
+			\item[WDIF] : Interupt Flag, en lecture uniquement.
+			\item[WDE; WDIE] = 01 - Interrupt mode.
+			\item[WDP[3:0]] = 0101 - Timing de 0.5s.
+		\end{itemize}
 
 		Pour envoyer les mesures à l'imprimante nous devons utiliser la liaison série de l'ATMEGA comme décrit en 2.2.3, nous avons caculé la valeur de UBRR grâce à la formule donné dans la documentation $UBRR = \dfrac{f_{osc}}{16*BAUD} - 1$ qui nous donne UBRR = 832, soit 0x340 à répartir sur les registres UBRRL0 et UBRRH0.
 		\begin{lstlisting}
@@ -153,7 +202,7 @@
 		\end{lstlisting}
 		Cette procédure a pour but de démarrer ou d'arreter le WatchDog selon si le vehicule qui a été détecté entrait ou sortait de la zone de mesure (l'interuption est règlée pour être déclanchée sur front montant comme déscendant), cette distinction est faite grâce à une variable $cpt\_detection$ qui est mise à 1 lorsqu'un vehicule est présent dans la zone et à 0 lorsque ce n'est plus le cas.\\
 		
-		Par la suite, le WatchDog va maintenant déclancher des interuptions toute les 0.5s comme defini lors de l'initialisation. voyons maintenant ce que fait cette procédure:\\
+		Par la suite, le WatchDog va maintenant déclancher des interuptions toute les 0.5s sur la procédure $IRQ\_WatchDog$ comme defini lors de l'initialisation. Voyons maintenant ce que fait cette procédure:\\
 		
 		\begin{lstlisting}
 			//interuption du watch_dog
@@ -191,7 +240,7 @@
 			call imprime 
 			RETI
 		\end{lstlisting}
-		Ici la mesure de distance est stockée dans un buffer qui correspond à la première ou à la seconde mesure pour pouvoir par la suite faire la difference entre les deux position et ainsi obtenir la vitesse que l'on cherche à mesurer. On compare ensuite la valeur mesurée avec la vitesse maximale autorisée qui a été entrée et si elle est atteinte et que la dernière mesure de position était inferieure à 30m, on lance la procédure de flash et d'envoi de la vitesse mesurée à l'imprimante.\\
+		Cette procédure a pour but global de prendre une première mesure de vitesse au début de la zone de mesure, et si cette mesure de vitesse est supérieure à la vitesse maximale autorisée, alors le convertisseur analogique numérique est lancé en free running mode et le radar flashera le vehicule lorsque la mesure de position sera inférieure à 30m on lance la procédure de flash et d'envoi de la vitesse mesurée à l'imprimante. Ce choix est expliqué plus en détail dans la partie 4.1.\\
 		Cette vitesse est d'abord convertie en $km/h$ à partir de la mesure en $m/s$ qui est utilisée en interne et ensuite envoyée caractère par caractère à l'imprimante. 
 		
 		\subsection{Changement de la vitesse limite par l'utilisateur}
@@ -199,12 +248,23 @@
 		
 		
 		\section{Limites}
-		Comme nous l'avons dit en 3.1, le choix de l'intervalle entre les mesures à 0.5s entraîne des limites pour certaines vitesses qui peuvent passer à travers la zone de flash des 30m, en effet un vehicule roulant à plus de $60 m/s$ (soit $216km/h$) pourrait parcourir les 30m en moins de 0.5s et donc dans certains cas éviter d'être flashé en roulant à une vitesse assez précise.\\
-		Cette limite peut être quantifiée avec certaines conditions:
+		\subsection{Limite de l'utilisation du WatchDog à 0.5s}
+		Comme nous l'avons dit en 3.1, le choix de l'intervalle entre les mesures à 0.5s entraîne des limites pour certaines vitesses qui peuvent passer à travers la zone de flash des 30m et donc dans certains cas éviter d'être flashé en roulant à une vitesse assez précise.\\
+		Cette limite peut être quantifiée sous quelques conditions:
 		\begin{itemize}
 			\item La première mesure est faite à exactement 100m du radar.
 			\item Chaque mesure qui suit est faite à exactement 0.5s d'intervalle.
+			\item Chaque calcul de vitesse se fait sur deux mesures, desquelles la seconde doit se retrouver dans la zone des 30m pour être flashé
 		\end{itemize}
-		
+		Dans ces conditions, un rapide script (en annexe) nous permet de déterminer les plages de vitesses qui ne pourrait pas être mesurées avec ce système, on obtient les plages suivantes :
+		\begin{itemize}
+			\item $[33.4;35]\ m/s$ soit $[120;126]\ km/h$
+			\item $[50;69.9]\ m/s$ soit $[180;251]\ km/h$
+			\item $[100.2;+\infty[\ m/s$ soit $[360.7;+\infty[\ km/h$
+		\end{itemize}
+		Comme on peut le constater, ces plages sont problématiques car parfaitement atteignable par un vehicule sur une autoroute (particulièrement les 2 premières). Notre solution pour palier à ce problème est celle implémentée en 3.2, l'attente en free running mode que le vehicule puisse être falshé fait que la seule façon d'éviter le radar serait de traverser la zone des 30m en moins de temps qu'il n'en faut à l'ATMEGA pour réaliser une convertion, ce qui fait que la vitesse minimale pour y parvenir devient bien trop élevée pour qu'un vehicule terrestre puisse l'atteindre.
+	
+		\subsection{Approximation numérique}
+		Par soucis de précision 
 		
 \end{document}
