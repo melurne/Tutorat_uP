@@ -195,7 +195,16 @@
 		Cette vitesse est d'abord convertie en $km/h$ à partir de la mesure en $m/s$ qui est utilisée en interne et ensuite envoyée caractère par caractère à l'imprimante. 
 		
 		\subsection{Changement de la vitesse limite par l'utilisateur}
-		La vitesse limite authorisée doit pouvoir être modifiée à tout moment par l'utilisateur à l'aide du clavier, nous afficherons également la saisie sur les 3 afficheurs durant la durée de la saisie et nous désactiverons les afficheurs lorsque la saisie a été validée.
+		La vitesse limite authorisée doit pouvoir être modifiée à tout moment par l'utilisateur à l'aide du clavier, nous afficherons également la saisie sur les 3 afficheurs durant la durée de la saisie et nous désactiverons les afficheurs lorsque la saisie a été validée. Cette saisie sera stockée dans 3 variables (une pour chaque digit) ce qui facilitera la saisie et nottament la correction.
+		
+		
+		\section{Limites}
+		Comme nous l'avons dit en 3.1, le choix de l'intervalle entre les mesures à 0.5s entraîne des limites pour certaines vitesses qui peuvent passer à travers la zone de flash des 30m, en effet un vehicule roulant à plus de $60 m/s$ (soit $216km/h$) pourrait parcourir les 30m en moins de 0.5s et donc dans certains cas éviter d'être flashé en roulant à une vitesse assez précise.\\
+		Cette limite peut être quantifiée avec certaines conditions:
+		\begin{itemize}
+			\item La première mesure est faite à exactement 100m du radar.
+			\item Chaque mesure qui suit est faite à exactement 0.5s d'intervalle.
+		\end{itemize}
 		
 		
 \end{document}
