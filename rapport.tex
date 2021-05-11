@@ -100,7 +100,7 @@
 			WDTCSR = 0b0101 0101
 		\end{lstlisting}
 
-		Pour envoyer les mesures à l'imprimante nous devons utiliser la liaison série de l'ATMEGA comme décrit en 2.2.3.
+		Pour envoyer les mesures à l'imprimante nous devons utiliser la liaison série de l'ATMEGA comme décrit en 2.2.3, nous avons caculé la valeur de UBRR grâce à la formule donné dans la documentation $UBRR = \dfrac{f_{osc}}{16*BAUD} - 1$ qui nous donne UBRR = 832, soit 0x340 à répartir sur les registres UBRRL0 et UBRRH0.
 		\begin{lstlisting}
 			//printer (envoi uniquement, pas de verification, conforme au CDCF)
 			UBRR (f = 16MHz) = 832
