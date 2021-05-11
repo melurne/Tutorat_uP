@@ -6,19 +6,7 @@ increment = 0.1
 
 timeDelta = 0.5
 
-speed = 34.4
 matches = []
-
-pos = initial_dist
-steps = [initial_dist]
-
-
-while pos > 0:
-	pos -= speed/2
-	steps.append(pos)
-print(steps)
-speed = 30
-
 
 while speed < 500/3.6 :
 	steps = [initial_dist]
@@ -37,7 +25,4 @@ while speed < 500/3.6 :
 
 vitesses = [match[0]*3.6 for match in matches]
 
-print(matches)
-#print([match[0]*3.6 for match in matches])
-plt.plot(vitesses, vitesses, 'b*')
-plt.show()
+print([match[0]*3.6 for match in matches])

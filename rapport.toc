@@ -9,7 +9,10 @@
 \contentsline {section}{\numberline {3}Architecture Code}{6}{}%
 \contentsline {subsection}{\numberline {3.1}Initialisation}{6}{}%
 \contentsline {subsection}{\numberline {3.2}Structure globale}{8}{}%
-\contentsline {subsection}{\numberline {3.3}Changement de la vitesse limite par l'utilisateur}{10}{}%
-\contentsline {section}{\numberline {4}Limites}{10}{}%
-\contentsline {subsection}{\numberline {4.1}Limite de l'utilisation du WatchDog à 0.5s}{10}{}%
-\contentsline {subsection}{\numberline {4.2}Approximation numérique}{11}{}%
+\contentsline {subsection}{\numberline {3.3}Changement de la vitesse limite par l'utilisateur}{12}{}%
+\contentsline {section}{\numberline {4}Limites}{13}{}%
+\contentsline {subsection}{\numberline {4.1}Limite de l'utilisation du WatchDog à 0.5s}{13}{}%
+\contentsline {subsection}{\numberline {4.2}Approximation numérique}{14}{}%
+\contentsline {section}{\numberline {5}Annexe}{15}{}%
+\contentsline {subsection}{\numberline {5.1}Code Global}{15}{}%
+\contentsline {subsection}{\numberline {5.2}Recherche de la limite}{22}{}%
