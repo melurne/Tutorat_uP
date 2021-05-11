@@ -85,6 +85,76 @@
 		L'impimante série est reliée à l'interface USART0 (PE0/RXD0;PE1/TXD1), L'imprimante fonctionne à 1200 bauds, 8bits de message, 1 bit stop et pas de parité, son initialisation sera développée dans la section 3.\\
 	\newpage
 	\section{Architecture Code}
+		\subsection{Première approche}
+		Nous avons commencé par réaliser une escisse de code en pseudo code:
+		\begin{lstlisting}
+			Init:
+			
+			int Pos1;
+			int Pos2;
+			int cpt_mersure = 0;
+			int clavier[ ];
+			int vitesse_limite;
+			int touche;
+			int cpt_clavier=0;
+			int affiche[]
+			
+			Loop:
+			sleep;
+			jmp loop;
+			
+			IRQ_Detecteur:
+			if PDO==1
+			int watch_dog a 0,5s (a 1s si quelqu un roule a plus de 220 km il ne serait pas forcement flashe)
+			else	
+			reinistialisation watch_dog
+			RETI
+			
+			IRQ_WDT:
+			activer la convertion d une valeur 
+			RETI
+			
+			IRQ_CONVERTION: (quand convertion fini)
+			if cpt_mersure == 0
+			Pos1= mesure
+			cptm = 1
+			if cpt_mesure==1
+			Pos2=mesure
+			if (Pos1-Pos2) > vitesse limite et Pos2 < 30 
+			flash
+			envoie de la valeur sur le port serie 
+			cptm == 0
+			RETI	
+			
+			IRQ_CLAVIER:
+			touche = clavier[touche_appuier]
+			
+			if touche == V
+			RETI
+			else if touche == C
+			Vitesse_limite=0				
+			else if cpt==0
+			Vitesse_limite=touche
+			call afficheur
+			cpt++
+			else if cpt==1
+			Vitesse_limite*=10
+			Vitesse_limite+touche
+			call afficheur
+			cpt++
+			else if cpt==2
+			Vitesse_limite*=10
+			Vitesse_limite+touche
+			call afficheur
+			cpt=0
+			RETI
+			
+			Afficheur:
+			affiche[2]=vitesse_limite%100	
+			affiche[1]=(vitesse_limite/10)%10
+			affiche[0]=vitesse_limite/100
+		\end{lstlisting}
+	
 		\subsection{Initialisation}
 		Le convertisseur analogique numérique (ADC) est mis en place de sorte qu'il réalise des convertions sur demande en lisant sur la broche PF0/ADC0 en envoyant une interuption à la fin de la convertion.
 		\begin{lstlisting}
@@ -177,8 +247,7 @@
 			\item[RXEN; TXEN] : Recieve/ Transmit Enable, ici on active uniquement la transmission
 			\item[UCSZ2; RXB8; TXB8] : Utiles uniquement en transmission 9 bits.
 		\end{itemize}
-	
-		\newpage
+
 		UCSR0C:
 		\begin{center}
 			\begin{tabular}{|c|c|c|c|c|c|c|c|}
@@ -248,7 +317,7 @@
 				RETI
 		\end{lstlisting}
 		Ici tout ce que fait la procédure c'est lancer une convertion sur ADC0 afin de mesurer la distance du radar au vehicule, lorsque cette mesure sera faite, le convertisseur analogique numérique lancera une interruption qui déclanchera la procédure $IRQ\_convertion$.\\
-		\newpage
+
 		\begin{lstlisting}
 			IRQ_CONVERTION:     ;quand la distance a ete convertie en valeur numerique
 			mesure <- ADCH
@@ -320,7 +389,7 @@
 			RETI
 		\end{lstlisting}
 		Cette procédure a pour but global de prendre une première mesure de vitesse au début de la zone de mesure, et si cette mesure de vitesse est supérieure à la vitesse maximale autorisée, alors le convertisseur analogique numérique est lancé en free running mode et le radar flashera le vehicule lorsque la mesure de position sera inférieure à 30m on lance la procédure de flash et d'envoi de la vitesse mesurée à l'imprimante. Ce choix est expliqué plus en détail dans la partie 4.1.\\
-		Cette vitesse est d'abord convertie en $km/h$ à partir de la mesure en $m/s$ qui est utilisée en interne et ensuite envoyée caractère par caractère à l'imprimante. 
+		Cette vitesse est d'abord convertie en $km/h$ à partir de la mesure en $m/s$ qui est utilisée en interne et ensuite envoyée caractère par caractère à l'imprimante, cette transmission aurait pu être faite par interruption, mais cela aurait alourdi grandement le code, nous avons donc choisis de travailler par scrutation pour allèger le code, même si ce choix alonge la procédure d'interruption lors d'un flash, mais cette interruption ne devrait pas survenir assez souvent pour créer un problème.
 		
 		\subsection{Changement de la vitesse limite par l'utilisateur}
 		La vitesse limite authorisée doit pouvoir être modifiée à tout moment par l'utilisateur à l'aide du clavier, nous afficherons également la saisie sur les 3 afficheurs durant la durée de la saisie et nous désactiverons les afficheurs lorsque la saisie a été validée. Cette saisie sera stockée dans 3 variables (une pour chaque digit) ce qui facilitera la saisie et nottament la correction.
@@ -393,8 +462,8 @@
 		Comme on peut le constater, ces plages sont problématiques car parfaitement atteignable par un vehicule sur une autoroute (particulièrement les 2 premières). Notre solution pour palier à ce problème est celle implémentée en 3.2, l'attente en free running mode que le vehicule puisse être falshé fait que la seule façon d'éviter le radar serait de traverser la zone des 30m en moins de temps qu'il n'en faut à l'ATMEGA pour réaliser une convertion, ce qui fait que la vitesse minimale pour y parvenir devient bien trop élevée pour qu'un vehicule terrestre puisse l'atteindre.
 	
 		\subsection{Approximation numérique}
-		Par soucis de précision 
-		
+		Par soucis de précision, on stocke la vitesse maximale tout comme les mesures effectuées en m/s, avec les distances en metres ramenés de $[0;100]$ sur $[0;255]$ pour avoir toute la précision disponible sur 8 bits, cela nous donne une précision de $\dfrac{100}{255} = 0.39m$ soit une précision sur la vitesse de $\dfrac{0.39m}{0.5s} = 0.78m/s = 2.8 km/h$ ce qui est admissible. De plus cette approche nous permet d'avoir une vitesse maximale mesurable de $380km/h$ contre les 255 que peuvent acceuillir un octet.
+ 		
 		
 		\newpage
 		\section{Annexe}
