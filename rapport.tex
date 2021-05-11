@@ -46,7 +46,7 @@
 		Le radar doit pouvoir réaliser les fonctions suivantes :
 		\begin{enumerate}
 			\item Mesurer la vitesse d'un véhicule qui entre dans sa zone d'action
-			\item Permettre de changer la vitesse maximale authorisée à l'aide d'un clavier
+			\item Permettre de changer la vitesse maximale autorisée à l'aide d'un clavier
 			\item Nous avons aussi ajouté des afficheurs 7 segments pour afficher la vitesse alors qu'elle est tapée.
 			\item Si la vitesse mesurée est supérieure à la vitesse maximale, activer le flash et envoyer la vitesse mesurée sur l'imprimante série
 		\end{enumerate}
@@ -86,7 +86,7 @@
 	\newpage
 	\section{Architecture Code}
 		\subsection{Première approche}
-		Nous avons commencé par réaliser une escisse de code en pseudo code:
+		Nous avons commencé par réaliser une escisse de code en pseudo code afin de mettre en place
 		\begin{lstlisting}
 			Init:
 			
@@ -159,18 +159,18 @@
 		Le convertisseur analogique numérique (ADC) est mis en place de sorte qu'il réalise des convertions sur demande en lisant sur la broche PF0/ADC0 en envoyant une interuption à la fin de la convertion.
 		\begin{lstlisting}
 			//ADC (convertion ADC0, single convertion)
-			ADMUX = 0b0010 0000
+			ADMUX = 0b0110 0000
 			ADCSRA = 0b1000 1111
 			ADCSRB = 0x00
 		\end{lstlisting}
-		
+		\newpage
 		ADMUX:
 		\begin{center}
 		\begin{tabular}{|c|c|c|c|c|c|c|c|}
 		\hline
 		REFS1 & REFS0 & ADLAR & MUX4 & MUX3 & MUX2 & MUX1 & MUX0\\
 		\hline
-		0 & 0 & 1 & 0 & 0 & 0 & 0 & 0\\
+		0 & 1 & 1 & 0 & 0 & 0 & 0 & 0\\
 		\hline
 		\end{tabular}
 		\end{center}
@@ -459,7 +459,7 @@
 			\item $[50;69.9]\ m/s$ soit $[180;251]\ km/h$
 			\item $[100.2;+\infty[\ m/s$ soit $[360.7;+\infty[\ km/h$
 		\end{itemize}
-		Comme on peut le constater, ces plages sont problématiques car parfaitement atteignable par un vehicule sur une autoroute (particulièrement les 2 premières). Notre solution pour palier à ce problème est celle implémentée en 3.2, l'attente en free running mode que le vehicule puisse être falshé fait que la seule façon d'éviter le radar serait de traverser la zone des 30m en moins de temps qu'il n'en faut à l'ATMEGA pour réaliser une convertion, ce qui fait que la vitesse minimale pour y parvenir devient bien trop élevée pour qu'un vehicule terrestre puisse l'atteindre.
+		Comme on peut le constater, ces plages sont problématiques car parfaitement atteignable par un vehicule sur une autoroute (particulièrement les 2 premières). Notre solution pour palier à ce problème est celle implémentée en 3.2, l'attente en free running mode que le vehicule puisse être flashé fait que la seule façon d'éviter le radar serait de traverser la zone des 30m en moins de temps qu'il n'en faut à l'ATMEGA pour réaliser une convertion, ce qui fait que la vitesse minimale pour y parvenir devient bien trop élevée pour qu'un vehicule terrestre puisse l'atteindre.
 	
 		\subsection{Approximation numérique}
 		Par soucis de précision, on stocke la vitesse maximale tout comme les mesures effectuées en m/s, avec les distances en metres ramenés de $[0;100]$ sur $[0;255]$ pour avoir toute la précision disponible sur 8 bits, cela nous donne une précision de $\dfrac{100}{255} = 0.39m$ soit une précision sur la vitesse de $\dfrac{0.39m}{0.5s} = 0.78m/s = 2.8 km/h$ ce qui est admissible. De plus cette approche nous permet d'avoir une vitesse maximale mesurable de $380km/h$ contre les 255 que peuvent acceuillir un octet.
