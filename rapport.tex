@@ -34,7 +34,7 @@
 
 \begin{document}
 	\title{Tutorat microprocesseur}
-	\author{Corentin , Florian DERLIC, Miaoqi WANG, Maxence NEUS}
+	\author{Corentin GIELEN, Florian DERLIC, Miaoqi WANG, Maxence NEUS}
 	\maketitle
 	
 	\newpage
@@ -49,6 +49,10 @@
 			\item Permettre de changer la vitesse maximale authorisée à l'aide d'un clavier
 			\item Si la vitesse mesurée est supérieure à la vitesse maximale, activer le flash et envoyer la vitesse mesurée sur l'imprimante série
 		\end{enumerate}
+	
+		On nous demande ici en plus, de ne flasher que lorsque le vehicule se trouve à une distance de moins de 30m du radar afin que l'appareil photo puisse avoir une bonne vue de la plaque d'immatriculation.\\
+		Malheureusement cette restriction nous amène à des limitations dans notre capacité à mesurer certaines vitesses mais ce point sera développé plus emplement plus loin.
+		
 	\newpage
 	\section{Architecture Matérielle}
 		\subsection{Matériel}
@@ -81,6 +85,7 @@
 	\newpage
 	\section{Architecture Code}
 		\subsection{Initialisation}
+		Le convertisseur analogique numérique (ADC) est mis en place de sorte qu'il réalise des convertions sur demande en lisant sur la broche PF0/ADC0 en envoyant une interuption à la fin de la convertion.
 		\begin{lstlisting}
 			//ADC (convertion ADC0, single convertion)
 			ADMUX = 0b0010 0000
@@ -88,12 +93,14 @@
 			ADCSRB = 0x00
 		\end{lstlisting}
 		
+		Nous utiliserons un WatchDog pour temporiser nos mesures, celui çi est ici reglé pour envoyer des interuptions toute les 0.5s (Ce choix est discuté dans la partie limites).
 		\begin{lstlisting}
 			//Watchdog (interruptions toute les 0.5s)
 			WDTCSR = 0x10 // enable change
 			WDTCSR = 0b0101 0101
 		\end{lstlisting}
 
+		Pour envoyer les mesures à l'imprimante nous devons utiliser la liaison série de l'ATMEGA comme décrit en 2.2.3.
 		\begin{lstlisting}
 			//printer (envoi uniquement, pas de verification, conforme au CDCF)
 			UBRR (f = 16MHz) = 832
@@ -105,13 +112,15 @@
 			UCSR0C = 0b0000 0110			
 		\end{lstlisting}	
 	
+		On règle ici les afficheurs et le clavier comme décrit en 2.2.1.
 		\begin{lstlisting}
 			//Clavier et afficheurs
 			DDRA = 0b0001 1111
 			DDRB = 0x0111 1111
 			DDRC = 0b0000 0111
 		\end{lstlisting}
-		
+		\newpage
+		On reprends ici les différents vecteurs d'interruptions utilisés ainsi que les noms des subsoutines associées.
 		\begin{lstlisting}
 			//vecteurs d'interuption
 			.org 0x0002
@@ -123,4 +132,67 @@
 			.org 0x003A
 				JMP IRQ_convertion
 		\end{lstlisting}
+		\subsection{Structure globale}
+		Afin de réaliser les mesures de vitesses, nous n'avons à notre disposition que la position du vehicule, nous allons donc avoir besoin de mesurer la distance entre le radar et le vehicule à un intervale régulier pour pouvoir par la suite calculer la vitesse. \\
+		Le processus de mesure commence lorsque le vehicule entre dans la zone de mesure du télémetre et que le détecteur de présence envoie un signal d'interruption qui amène à l'appel de la procédure d'interruption $IRQ\_detecteur$.
+		
+		\begin{lstlisting}
+			// detection d'une voiture par le detecteur de presence  
+			IRQ_Detecteur:
+				si cpt_detection==0 alors saut init_watch // si le capteur est en front montant on initialise le WatchDog
+				//si non on reinitialise le WatchDog 
+				WDTCSR<-0b00010000
+				WDTCSR<-0b00000000
+				cpt_detection <- 0 
+				RETI
+				init_watch: 
+					WDTCSR<-0b00010000
+					WDTCSR<-0b01001101
+					cpt_detection=1
+				RETI
+		\end{lstlisting}
+		Cette procédure a pour but de démarrer ou d'arreter le WatchDog selon si le vehicule qui a été détecté entrait ou sortait de la zone de mesure (l'interuption est règlée pour être déclanchée sur front montant comme déscendant), cette distinction est faite grâce à une variable $cpt\_detection$ qui est mise à 1 lorsqu'un vehicule est présent dans la zone et à 0 lorsque ce n'est plus le cas.\\
+		
+		Par la suite, le WatchDog va maintenant déclancher des interuptions toute les 0.5s comme defini lors de l'initialisation. voyons maintenant ce que fait cette procédure:\\
+		
+		\begin{lstlisting}
+			//interuption du watch_dog
+			// quand le watch_dog est activer on active la prise de mesure
+			IRQ_WDT :
+				ADCSRA<-0b11001111
+				RETI
+		\end{lstlisting}
+		Ici tout ce que fait la procédure c'est lancer une convertion sur ADC0 afin de mesurer la distance du radar au vehicule, lorsque cette mesure sera faite, le convertisseur analogique numérique lancera une interruption qui déclanchera la procédure $IRQ\_convertion$.\\
+		
+		\begin{lstlisting}
+			IRQ_CONVERTION:
+			mesure <- ADC
+			si(cpt_mesure) == 0 alors saut cpt0 // c'est a dire c'est la premiere mesure de vitesse 
+			si(cpt_mesure) == 1 alors saut cpt1 // c'est la 2 eme mesure de vitesse
+			
+			cpt0:
+			Pos1<-mesure //  alors on stocke la valeur mesure par la conversion entre 0 et 255
+			cpt_mesure <- 1 
+			RETI
+			
+			cpt1:
+			pos2<-mesure
+			if(Pos1-Pos2)>vitesse_limite saut distflash // si la vitesse et superieur a la limite et que la voiture est a plus de 30m du tel
+			cpt_mesure <- 0
+			RETI
+			
+			distflash:// si la vitesse est superieur on attends que la distance au radar soit inferieur a 30m
+			posflash<-76// 76 en annalogique soit 255/100*30 pour avoir les 30m
+			si posflash<76 alors saut port_serie 
+			ADCSRA<-0b11001111
+			
+			port_serie:
+			call flash 
+			call imprime 
+			RETI
+		\end{lstlisting}
+		Ici la mesure de distance est stockée dans un buffer qui correspond à la première ou à la seconde mesure pour pouvoir par la suite faire la difference entre les deux position et ainsi obtenir la vitesse que l'on cherche à mesurer. On compare ensuite la valeur mesurée avec la vitesse maximale autorisée qui a été entrée et si elle est atteinte et que la dernière mesure de position était inferieure à 30m, on lance la procédure de flash et d'envoi de la vitesse mesurée à l'imprimante.\\
+		Cette vitesse est d'abord convertie en $km/h$ à partir de la mesure en $m/s$ qui est utilisée en interne et ensuite envoyée caractère par caractère à l'imprimante. 
+		
+		
 \end{document}

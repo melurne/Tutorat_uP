@@ -8,3 +8,4 @@
 \contentsline {subsubsection}{\numberline {2.2.3}Sorties utilisateur}{5}%
 \contentsline {section}{\numberline {3}Architecture Code}{6}%
 \contentsline {subsection}{\numberline {3.1}Initialisation}{6}%
+\contentsline {subsection}{\numberline {3.2}Structure globale}{7}%
