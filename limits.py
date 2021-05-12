@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 initial_dist = 100
 flash_dist = 30
 increment = 0.1
+speed = 30
 
 timeDelta = 0.5
 
@@ -26,3 +27,6 @@ while speed < 500/3.6 :
 vitesses = [match[0]*3.6 for match in matches]
 
 print([match[0]*3.6 for match in matches])
+
+plt.plot(vitesses, vitesses, "b*")
+plt.show()

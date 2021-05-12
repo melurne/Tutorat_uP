@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Arch Linux) (preloaded format=pdflatex 2021.5.6)  12 MAY 2021 07:52
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Arch Linux) (preloaded format=pdflatex 2021.5.6)  12 MAY 2021 09:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -341,47 +341,53 @@ Underfull \hbox (badness 10000) in paragraph at lines 346--348
 
  []
 
-[12] [13] [14] [15] [16] [17] [18]
-Overfull \hbox (176.82028pt too wide) in paragraph at lines 555--556
+[12] [13] [14] [15]
+<screen.png, id=59, 435.12563pt x 325.96782pt>
+File: screen.png Graphic file (type png)
+<use screen.png>
+Package pdftex.def Info: screen.png  used on input line 481.
+(pdftex.def)             Requested size: 256.0748pt x 191.84682pt.
+ [16 <./screen.png (PNG copy)>] [17] [18]
+Overfull \hbox (176.82028pt too wide) in paragraph at lines 560--561
 [][][][]  
  []
 
 [19]
-Overfull \hbox (15.44919pt too wide) in paragraph at lines 579--580
+Overfull \hbox (15.44919pt too wide) in paragraph at lines 584--585
 [][][][][][][][][][][][][][][][][][][][][][][][][]  
  []
 
 
-Overfull \hbox (176.82028pt too wide) in paragraph at lines 582--583
+Overfull \hbox (176.82028pt too wide) in paragraph at lines 587--588
 [][][][]  
  []
 
 
-Overfull \hbox (222.80978pt too wide) in paragraph at lines 614--617
+Overfull \hbox (222.80978pt too wide) in paragraph at lines 619--622
 [][][][]  
  []
 
 [20]
-Overfull \hbox (148.07684pt too wide) in paragraph at lines 632--634
+Overfull \hbox (148.07684pt too wide) in paragraph at lines 637--639
 [][][][]  
  []
 
 
-Overfull \hbox (148.07684pt too wide) in paragraph at lines 647--649
+Overfull \hbox (148.07684pt too wide) in paragraph at lines 652--654
 [][][][]  
  []
 
 [21] [22] [23]
-Overfull \hbox (248.55847pt too wide) in paragraph at lines 739--741
+Overfull \hbox (248.55847pt too wide) in paragraph at lines 744--746
 [][]  
  []
 
 [24] [25] [26] (./rapport.aux) ) 
 Here is how much of TeX's memory you used:
- 6835 strings out of 479383
- 96385 string characters out of 5875831
+ 6842 strings out of 479383
+ 96468 string characters out of 5875831
  594822 words of memory out of 5000000
- 23836 multiletter control sequences out of 15000+600000
+ 23841 multiletter control sequences out of 15000+600000
  412104 words of font info for 84 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  66i,6n,72p,1007b,1721s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -393,10 +399,10 @@ nts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/publi
 c/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/c
 msy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></us
 r/share/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
-Output written on rapport.pdf (26 pages, 224589 bytes).
+Output written on rapport.pdf (26 pages, 237071 bytes).
 PDF statistics:
- 122 PDF objects out of 1000 (max. 8388607)
+ 123 PDF objects out of 1000 (max. 8388607)
  84 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 13318 words of extra memory for PDF output out of 14400 (max. 10000000)
+ 13323 words of extra memory for PDF output out of 14400 (max. 10000000)
 

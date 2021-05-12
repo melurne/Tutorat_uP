@@ -476,6 +476,11 @@
 			\item $[50;69.9]\ m/s$ soit $[180;251]\ km/h$
 			\item $[100.2;+\infty[\ m/s$ soit $[360.7;+\infty[\ km/h$
 		\end{itemize}
+		\begin{figure}[h]
+			\centering
+			\includegraphics[width = 9cm]{screen.png}
+			\caption{Zones non mesurables}
+		\end{figure}
 		Comme on peut le constater, ces plages sont problématiques car parfaitement atteignable par un vehicule sur une autoroute (particulièrement les 2 premières). Notre solution pour palier à ce problème est celle implémentée en 3.2, l'attente en free running mode que le vehicule puisse être flashé fait que la seule façon d'éviter le radar serait de traverser la zone des 30m en moins de temps qu'il n'en faut à l'ATMEGA pour réaliser une convertion, ce qui fait que la vitesse minimale pour y parvenir devient bien trop élevée pour qu'un vehicule terrestre puisse l'atteindre.
 	
 		\subsection{Approximation numérique}
@@ -794,6 +799,7 @@
 		flash_dist = 30
 		increment = 0.1
 		timeDelta = 0.5
+		speed = 30
 		
 		matches = []
 		
