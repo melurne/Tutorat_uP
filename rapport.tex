@@ -417,7 +417,7 @@
 			i<-0
 			changeVitesse<-1
 			
-			parcours_clavier: ;on parcours le clavier jusqu a trouver le bon 
+			parcoursClavier: ;on parcours le clavier jusqu a trouver le bon 
 			PORTA@IO<-codeClavier@ROM[i]
 			touche <- PINA@IO
 			si (touche == 0x44 ) alors saut REINITclavier ;C
@@ -425,7 +425,8 @@
 			si (touche == PORTA@IO)&&(CptAff!=3) alors saut sauvTouche
 			;sinon on incremente i
 			i <- i + 1 
-			JMP parcours_clavier
+			si i<12 alors saut parcoursClavier
+			RETI
 			
 			;partie pour l afficheur 
 			
